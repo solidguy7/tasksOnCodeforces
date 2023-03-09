@@ -25,10 +25,9 @@ def count_pages() -> int:
     number_pages = int(soup.find('div', class_='pagination').find('a', class_='arrow').find_previous('a').text.strip())
     return number_pages
 
-def append_params(param: str, lst: List[str]) -> None:
+def append_params(param: str or int, lst: List[str or int]) -> None:
     if param not in lst:
         lst.append(param)
-
 
 @scheduler.scheduled_task(trigger=IntervalTrigger(hours=1))
 def check_fresh_tasks():
@@ -53,15 +52,15 @@ def check_fresh_tasks():
                 if len(topic) != 1:
                     continue
                 topic = ''.join(topic)
-                difficulty = rows.find('span', class_='ProblemRating').text.strip()
+                difficulty = int(rows.find('span', class_='ProblemRating').text.strip())
+                solved = int(rows.find(title='Participants solved the problem').text.strip()[1:])
                 append_params(topic, subjects)
                 append_params(difficulty, difficulties)
-                solved = int(rows.find(title='Participants solved the problem').text.strip()[1:])
                 if Task.is_exists(id):
                     continue
             except AttributeError:
                 continue
-            task = Task(id=id, link=link, name=name, topic=topic, difficulty=int(difficulty), solved=solved)
+            task = Task(id=id, link=link, name=name, topic=topic, difficulty=difficulty, solved=solved)
             task.create()
 
 scheduler.start()

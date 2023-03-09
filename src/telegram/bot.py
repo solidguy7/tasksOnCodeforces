@@ -15,20 +15,20 @@ async def start(message: types.Message) -> None:
 
     await message.answer('Выбрать задачу', reply_markup=keyboard)
 
-@dp.message_handler(Text(equals='Сложность задачи'))
-async def task_difficulty(message: types.Message) -> None:
-    await message.answer('Выберите сложность задачи: ' + ', '.join(difficulties))
-
 @dp.message_handler(Text(equals='Тема задачи'))
 async def task_topic(message: types.Message) -> None:
-    await message.answer('Выберите тему задачи: ' + ', '.join(subjects))
+    await message.answer('Выберите тему задачи: ' + ', '.join(sorted(subjects)))
+
+@dp.message_handler(Text(equals='Сложность задачи'))
+async def task_difficulty(message: types.Message) -> None:
+    await message.answer('Выберите сложность задачи: ' + ', '.join([str(dif) for dif in sorted(difficulties)]))
 
 @dp.message_handler(lambda message: message.text in subjects)
 async def task_topic_message(message: types.Message) -> None:
     for task in Task.filter_topic_data(message.text):
         await message.answer(task)
 
-@dp.message_handler(lambda message: message.text in difficulties)
+@dp.message_handler(lambda message: int(message.text) in difficulties)
 async def task_difficulty_message(message: types.Message) -> None:
     for task in Task.filter_difficulty_data(int(message.text)):
         await message.answer(task)
