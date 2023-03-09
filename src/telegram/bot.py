@@ -1,38 +1,48 @@
 from aiogram import Bot, Dispatcher, types
-from aiogram.dispatcher.filters import Text
+from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from .config import token
-from parser import subjects, difficulties
+from parser import difficulties
 from models import Task
 
 bot = Bot(token=token)
-dp = Dispatcher(bot=bot)
+storage = MemoryStorage()
+dp = Dispatcher(bot=bot, storage=storage)
+
+topics = []
+
+class TaskState(StatesGroup):
+    difficulty = State()
+    topic = State()
 
 @dp.message_handler(commands='start')
 async def start(message: types.Message) -> None:
-    start_buttons = ['Сложность задачи', 'Тема задачи']
-    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    keyboard.add(*start_buttons)
+    await message.answer('Выберите сложность для задачи: ' + ', '.join([str(dif) for dif in sorted(difficulties)]))
+    await TaskState.difficulty.set()
 
-    await message.answer('Выбрать задачу', reply_markup=keyboard)
+@dp.message_handler(state=TaskState.difficulty)
+async def task_difficulty_message(message: types.Message, state: FSMContext) -> None:
+    if not message.text.isdigit() or int(message.text) not in difficulties:
+        await message.answer('Что-то пошло не так...')
+        return
+    await state.update_data(difficulty=message.text)
+    for topic in Task.filter_difficulty_data(int(message.text)):
+        topics.append(topic)
+    await message.answer('Выберите тему для задачи: ' + ', '.join(sorted(topics)))
+    await TaskState.next()
 
-@dp.message_handler(Text(equals='Тема задачи'))
-async def task_topic(message: types.Message) -> None:
-    await message.answer('Выберите тему задачи: ' + ', '.join(sorted(subjects)))
-
-@dp.message_handler(Text(equals='Сложность задачи'))
-async def task_difficulty(message: types.Message) -> None:
-    await message.answer('Выберите сложность задачи: ' + ', '.join([str(dif) for dif in sorted(difficulties)]))
-
-@dp.message_handler(lambda message: message.text in subjects)
-async def task_topic_message(message: types.Message) -> None:
-    for task in Task.filter_topic_data(message.text):
+@dp.message_handler(state=TaskState.topic)
+async def task_topic_message(message: types.Message, state: FSMContext) -> None:
+    if message.text not in topics:
+        await message.answer('Упс... Попробуй ещё раз')
+        return
+    await state.update_data(topic=message.text)
+    data = await state.get_data()
+    for task in Task.filter_diff_topic_data(diff=data['difficulty'], topic=data['topic']):
         await message.answer(task)
-
-@dp.message_handler(lambda message: int(message.text) in difficulties)
-async def task_difficulty_message(message: types.Message) -> None:
-    for task in Task.filter_difficulty_data(int(message.text)):
-        await message.answer(task)
+    await state.finish()
 
 @dp.message_handler(lambda message: message.text)
-async def task_difficulty_message(message: types.Message) -> None:
+async def task_unknown_message(message: types.Message) -> None:
     await message.answer('Я не понимаю к чему относится ваше сообщение')

@@ -1,5 +1,6 @@
 from sqlalchemy import Column, String, Integer
 from sqlalchemy.sql import exists
+from typing import List
 from database import Base, s
 
 class Task(Base):
@@ -36,9 +37,13 @@ class Task(Base):
         return False
 
     @classmethod
-    def filter_topic_data(cls, param: str = topic):
-        return s.query(cls).filter_by(topic=param).all()[:10]
+    def filter_difficulty_data(cls, param: int) -> List[str]:
+        topics = []
+        for topic in s.query(cls).filter_by(difficulty=param).all():
+            if topic.topic not in topics:
+                topics.append(topic.topic)
+        return topics
 
     @classmethod
-    def filter_difficulty_data(cls, param: int = difficulty):
-        return s.query(cls).filter_by(difficulty=param).all()[:10]
+    def filter_diff_topic_data(cls, diff: str, topic: str):
+        return s.query(cls).filter_by(difficulty=diff).filter_by(topic=topic).all()[:10]

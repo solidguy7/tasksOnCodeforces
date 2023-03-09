@@ -11,7 +11,6 @@ headers = {
 
 scheduler = AsyncIOScheduler()
 
-subjects = []
 difficulties = []
 
 def generate_url_and_soup(page: int) -> BeautifulSoup:
@@ -25,7 +24,7 @@ def count_pages() -> int:
     number_pages = int(soup.find('div', class_='pagination').find('a', class_='arrow').find_previous('a').text.strip())
     return number_pages
 
-def append_params(param: str or int, lst: List[str or int]) -> None:
+def append_params(param: int, lst: List[int]) -> None:
     if param not in lst:
         lst.append(param)
 
@@ -54,7 +53,6 @@ def check_fresh_tasks():
                 topic = ''.join(topic)
                 difficulty = int(rows.find('span', class_='ProblemRating').text.strip())
                 solved = int(rows.find(title='Participants solved the problem').text.strip()[1:])
-                append_params(topic, subjects)
                 append_params(difficulty, difficulties)
                 if Task.is_exists(id):
                     continue
