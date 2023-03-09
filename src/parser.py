@@ -1,0 +1,54 @@
+import requests
+from bs4 import BeautifulSoup
+from models import Task
+
+headers = {
+    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0'
+}
+
+subjects = []
+difficulties = []
+
+def generate_url_and_soup(page: int) -> BeautifulSoup:
+    url = f'https://codeforces.com/problemset/page/{page}?order=BY_SOLVED_DESC'
+    r = requests.get(url=url, headers=headers)
+    soup = BeautifulSoup(r.text, 'lxml')
+    return soup
+
+def count_pages() -> int:
+    soup = generate_url_and_soup(page=1)
+    number_pages = int(soup.find('div', class_='pagination').find('a', class_='arrow').find_previous('a').text.strip())
+    return number_pages
+
+def check_fresh_tasks():
+    for page in range(1, count_pages() + 1):
+        soup = generate_url_and_soup(page=page)
+        rows = soup.find('table', class_='problems').find('tr')
+
+        for row in range(100):
+            try:
+                rows = rows.find_next('tr')
+                id = rows.find('a').text.strip()
+                if Task.is_exists(id):
+                    continue
+                link = f"https://codeforces.com{rows.find('a').get('href')}"
+                name = rows.find('a').find_next('a').text.strip()
+                topics = rows.find_next('div',
+                                    style='float: right; font-size: 1.1rem; padding-top: 1px; text-align: right;').text.strip().splitlines()
+                topic = []
+                for ind in range(len(topics)):
+                    if ind == len(topics) - 1:
+                        topic.append(topics[ind].strip())
+                    else:
+                        topic.append(topics[ind][:-1])
+                if len(topic) != 1:
+                    continue
+                topic = ''.join(topic)
+                subjects.append(topic)
+                difficulty = rows.find('span', class_='ProblemRating').text.strip()
+                difficulties.append(difficulty)
+                solved = int(rows.find(title='Participants solved the problem').text.strip()[1:])
+            except AttributeError:
+                continue
+            task = Task(id=id, link=link, name=name, topic=topic, difficulty=int(difficulty), solved=solved)
+            task.create()
