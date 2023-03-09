@@ -1,10 +1,14 @@
 import requests
 from bs4 import BeautifulSoup
+from asyncz.schedulers.asyncio import AsyncIOScheduler
+from asyncz.triggers import IntervalTrigger
 from models import Task
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0'
 }
+
+scheduler = AsyncIOScheduler()
 
 subjects = []
 difficulties = []
@@ -20,6 +24,7 @@ def count_pages() -> int:
     number_pages = int(soup.find('div', class_='pagination').find('a', class_='arrow').find_previous('a').text.strip())
     return number_pages
 
+@scheduler.scheduled_task(trigger=IntervalTrigger(hours=1))
 def check_fresh_tasks():
     for page in range(1, count_pages() + 1):
         soup = generate_url_and_soup(page=page)
@@ -52,3 +57,5 @@ def check_fresh_tasks():
                 continue
             task = Task(id=id, link=link, name=name, topic=topic, difficulty=int(difficulty), solved=solved)
             task.create()
+
+scheduler.start()
