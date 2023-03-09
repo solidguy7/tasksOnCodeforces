@@ -34,8 +34,6 @@ def check_fresh_tasks():
             try:
                 rows = rows.find_next('tr')
                 id = rows.find('a').text.strip()
-                if Task.is_exists(id):
-                    continue
                 link = f"https://codeforces.com{rows.find('a').get('href')}"
                 name = rows.find('a').find_next('a').text.strip()
                 topics = rows.find_next('div',
@@ -53,6 +51,8 @@ def check_fresh_tasks():
                 difficulty = rows.find('span', class_='ProblemRating').text.strip()
                 difficulties.append(difficulty)
                 solved = int(rows.find(title='Participants solved the problem').text.strip()[1:])
+                if Task.is_exists(id):
+                    continue
             except AttributeError:
                 continue
             task = Task(id=id, link=link, name=name, topic=topic, difficulty=int(difficulty), solved=solved)
