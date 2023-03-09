@@ -1,6 +1,7 @@
 from sqlalchemy import Column, String, Integer
 from sqlalchemy.sql import exists
 from typing import List
+from utils import append_params
 from database import Base, s
 
 class Task(Base):
@@ -40,8 +41,7 @@ class Task(Base):
     def filter_difficulty_data(cls, param: int) -> List[str]:
         topics = []
         for topic in s.query(cls).filter_by(difficulty=param).all():
-            if topic.topic not in topics:
-                topics.append(topic.topic)
+            append_params(topic.topic, topics)
         return topics
 
     @classmethod

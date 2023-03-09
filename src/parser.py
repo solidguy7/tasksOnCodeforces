@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from asyncz.schedulers.asyncio import AsyncIOScheduler
 from asyncz.triggers import IntervalTrigger
-from typing import List
+from utils import append_params
 from models import Task
 
 headers = {
@@ -23,10 +23,6 @@ def count_pages() -> int:
     soup = generate_url_and_soup(page=1)
     number_pages = int(soup.find('div', class_='pagination').find('a', class_='arrow').find_previous('a').text.strip())
     return number_pages
-
-def append_params(param: int, lst: List[int]) -> None:
-    if param not in lst:
-        lst.append(param)
 
 @scheduler.scheduled_task(trigger=IntervalTrigger(hours=1))
 def check_fresh_tasks():

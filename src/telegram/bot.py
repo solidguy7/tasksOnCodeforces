@@ -3,6 +3,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from .config import token
+from utils import append_params
 from parser import difficulties
 from models import Task
 
@@ -28,8 +29,7 @@ async def task_difficulty_message(message: types.Message, state: FSMContext) -> 
         return
     await state.update_data(difficulty=message.text)
     for topic in Task.filter_difficulty_data(int(message.text)):
-        if topic not in topics:
-            topics.append(topic)
+        append_params(topic, topics)
     await message.answer('Выберите тему для задачи: ' + ', '.join(sorted(topics)))
     await TaskState.next()
 
