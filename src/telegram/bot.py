@@ -28,7 +28,8 @@ async def task_difficulty_message(message: types.Message, state: FSMContext) -> 
         return
     await state.update_data(difficulty=message.text)
     for topic in Task.filter_difficulty_data(int(message.text)):
-        topics.append(topic)
+        if topic not in topics:
+            topics.append(topic)
     await message.answer('Выберите тему для задачи: ' + ', '.join(sorted(topics)))
     await TaskState.next()
 
