@@ -22,7 +22,7 @@ class Task(Base):
         self.solved = solved
 
     def __repr__(self) -> str:
-        return f'Задача №{self.id} - {self.name} на {self.topic} тему\nСложность {self.difficulty}, решено {self.solved}\n' \
+        return f'Задача №{self.id} - {self.name} на тему: {self.topic}\nСложность {self.difficulty}, решено {self.solved}\n' \
                f'{self.link}'
 
     def create(self):

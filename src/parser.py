@@ -13,7 +13,7 @@ scheduler = AsyncIOScheduler()
 difficulties = []
 
 def generate_url_and_soup(page: int) -> BeautifulSoup:
-    url = f'https://codeforces.com/problemset/page/{page}?order=BY_SOLVED_DESC'
+    url = f'https://codeforces.com/problemset/page/{page}?order=BY_SOLVED_DESC&locale=ru'
     r = requests.get(url=url, headers=headers)
     soup = BeautifulSoup(r.text, 'lxml')
     return soup
@@ -46,8 +46,8 @@ def check_fresh_tasks():
                 if len(topic) != 1:
                     continue
                 topic = ''.join(topic)
-                difficulty = int(rows.find('span', class_='ProblemRating').text.strip())
-                solved = int(rows.find(title='Participants solved the problem').text.strip()[1:])
+                difficulty = int(rows.find('span', title='Сложность').text.strip())
+                solved = int(rows.find(title='Количество решивших задачу').text.strip()[1:])
                 if not difficulty in difficulties:
                     difficulties.append(difficulty)
                 if Task.is_exists(id):
