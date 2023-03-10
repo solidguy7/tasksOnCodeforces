@@ -35,17 +35,14 @@ def check_fresh_tasks():
                 id = rows.find('a').text.strip()
                 link = f"https://codeforces.com{rows.find('a').get('href')}"
                 name = rows.find('a').find_next('a').text.strip()
-                topics = rows.find_next('div',
+                topic = rows.find_next('div',
                                     style='float: right; font-size: 1.1rem; padding-top: 1px; text-align: right;').text.strip().splitlines()
-                topic = []
-                for ind in range(len(topics)):
-                    if ind == len(topics) - 1:
-                        topic.append(topics[ind].strip())
-                    else:
-                        topic.append(topics[ind][:-1])
-                if len(topic) != 1:
-                    continue
-                topic = ''.join(topic)
+                if len(topic) > 1:
+                    topic = topic[0][:-1]
+                elif len(topic) == 1:
+                    topic = ''.join(topic)
+                else:
+                    raise AttributeError
                 difficulty = int(rows.find('span', title='Сложность').text.strip())
                 solved = int(rows.find(title='Количество решивших задачу').text.strip()[1:])
                 if not difficulty in difficulties:
