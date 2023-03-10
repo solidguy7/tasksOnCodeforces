@@ -1,7 +1,6 @@
 from sqlalchemy import Column, String, Integer
 from sqlalchemy.sql import exists
 from typing import List
-from utils import append_params
 from database import Base, s
 
 class Task(Base):

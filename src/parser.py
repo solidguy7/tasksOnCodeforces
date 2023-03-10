@@ -2,7 +2,6 @@ import requests
 from bs4 import BeautifulSoup
 from asyncz.schedulers.asyncio import AsyncIOScheduler
 from asyncz.triggers import IntervalTrigger
-from utils import append_params
 from models import Task
 
 headers = {
