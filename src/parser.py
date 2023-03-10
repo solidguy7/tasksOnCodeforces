@@ -49,7 +49,8 @@ def check_fresh_tasks():
                 topic = ''.join(topic)
                 difficulty = int(rows.find('span', class_='ProblemRating').text.strip())
                 solved = int(rows.find(title='Participants solved the problem').text.strip()[1:])
-                append_params(difficulty, difficulties)
+                if not difficulty in difficulties:
+                    difficulties.append(difficulty)
                 if Task.is_exists(id):
                     continue
             except AttributeError:

@@ -41,7 +41,8 @@ class Task(Base):
     def filter_difficulty_data(cls, param: int) -> List[str]:
         topics = []
         for topic in s.query(cls).filter_by(difficulty=param).all():
-            append_params(topic.topic, topics)
+            if not topic.topic in topics:
+                topics.append(topic.topic)
         return topics
 
     @classmethod
