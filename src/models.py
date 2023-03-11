@@ -37,12 +37,13 @@ class Task(Base):
         return False
 
     @classmethod
-    def filter_difficulty_data(cls, param: int) -> List[str]:
-        topics = []
-        for topic in s.query(cls).filter_by(difficulty=param).all():
-            if not topic.topic in topics:
-                topics.append(topic.topic)
-        return topics
+    def filter_difficulty_data(cls, param: int):
+        # topics = []
+        # for topic in s.query(cls).filter_by(difficulty=param).all():
+        #     if not topic.topic in topics:
+        #         topics.append(topic.topic)
+        # return topics
+        return s.query(cls).filter_by(difficulty=param).all()
 
     @classmethod
     def filter_diff_topic_data(cls, diff: str, topic: str):

@@ -28,7 +28,8 @@ async def task_difficulty_message(message: types.Message, state: FSMContext) -> 
         return
     await state.update_data(difficulty=message.text)
     for topic in Task.filter_difficulty_data(int(message.text)):
-        topics.append(topic)
+        if not topic.topic in topics:
+            topics.append(topic.topic)
     await message.answer('Выберите тему для задачи: ' + ', '.join(sorted(topics)))
     await TaskState.next()
 
@@ -41,6 +42,7 @@ async def task_topic_message(message: types.Message, state: FSMContext) -> None:
     data = await state.get_data()
     for task in Task.filter_diff_topic_data(diff=data['difficulty'], topic=data['topic']):
         await message.answer(task)
+    topics.clear()
     await state.finish()
 
 @dp.message_handler(lambda message: message.text)
